@@ -1,365 +1,173 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Inter', system-ui, sans-serif;
+const speedEl = document.getElementById("speed");
+const downloadEl = document.getElementById("download");
+const uploadEl = document.getElementById("upload");
+const startBtn = document.getElementById("startBtn");
+const gaugeFill = document.querySelector(".gauge-fill");
+const historyList = document.getElementById("historyList");
+const clearBtn = document.getElementById("clearHistory");
+const ispEl = document.getElementById("isp");
+const locationEl = document.getElementById("location");
+
+const insightSubtitle = document.getElementById("insightSubtitle");
+const tipText = document.getElementById("tipText");
+const insightFooter = document.getElementById("insightFooter");
+const ispName = document.getElementById("ispName");
+
+/* ================= GAUGE CONFIG ================= */
+const RADIUS = 110;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+const MAX_SPEED = 150;
+
+// initialize gauge
+gaugeFill.style.strokeDasharray = CIRCUMFERENCE;
+gaugeFill.style.strokeDashoffset = CIRCUMFERENCE;
+
+/* ================= ISP + LOCATION ================= */
+async function fetchISPInfo() {
+  try {
+    const res = await fetch("https://ipapi.co/json/");
+    const data = await res.json();
+
+    ispEl.textContent = `📡 ${data.org || "Local ISP"}`;
+    locationEl.textContent = "📍 VIT, Chennai";
+  } catch {
+    ispEl.textContent = "📡 Local ISP";
+    locationEl.textContent = "📍 VIT, Chennai";
+  }
 }
 
-body {
-  background: radial-gradient(circle at top, #0f2027, #000);
-  color: #fff;
-  min-height: 100vh;
+fetchISPInfo();
+
+/* ================= GAUGE UPDATE ================= */
+function setGauge(value) {
+  const percent = value / MAX_SPEED;
+  const offset = CIRCUMFERENCE * (1 - percent);
+  gaugeFill.style.strokeDashoffset = offset;
 }
 
-.top-bar {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px 40px;
-  font-size: 14px;
-  color: #aaa;
+/* ================= SPEED GENERATION ================= */
+function generateTargetSpeed() {
+  if (Math.random() < 0.7) {
+    return 10 + Math.random() * 90;
+  }
+  return 100 + Math.random() * 40;
 }
 
-.logo {
-  font-weight: 700;
-  color: #2fffdc;
+/* ================= START TEST ================= */
+function startTest() {
+  let currentSpeed = 0;
+  const targetSpeed = generateTargetSpeed();
+  let ticks = 0;
+
+  startBtn.disabled = true;
+  startBtn.textContent = "Testing...";
+
+  const interval = setInterval(() => {
+    ticks++;
+
+    const noise = (Math.random() - 0.5) * 10;
+    const trend = (targetSpeed - currentSpeed) * 0.12;
+
+    currentSpeed += trend + noise;
+
+    if (currentSpeed < 0) currentSpeed = 0;
+    if (currentSpeed > MAX_SPEED) currentSpeed = MAX_SPEED;
+
+    speedEl.textContent = Math.round(currentSpeed);
+    setGauge(currentSpeed);
+
+    if (ticks > 50) {
+      clearInterval(interval);
+      finishTest(targetSpeed);
+    }
+  }, 150);
 }
 
-.container {
-  text-align: center;
-  margin-top: 60px;
+/* ================= FINISH TEST ================= */
+function finishTest(finalSpeed) {
+  const download = finalSpeed.toFixed(1);
+  const upload = (finalSpeed * (0.3 + Math.random() * 0.2)).toFixed(1);
+
+  speedEl.textContent = Math.round(finalSpeed);
+  setGauge(finalSpeed);
+
+  downloadEl.textContent = `${download} Mbps`;
+  uploadEl.textContent = `${upload} Mbps`;
+
+  saveHistory(download, upload);
+
+  startBtn.disabled = false;
+  startBtn.textContent = "Test Again";
 }
 
-h1 {
-  font-size: 42px;
+/* ================= INSIGHT ENGINE ================= */
+function updateInsight() {
+  const items = document.querySelectorAll(".history-item");
+  if (items.length === 0) return;
+
+  let total = 0;
+  items.forEach(item => {
+    total += Number(item.dataset.download);
+  });
+
+  const avg = total / items.length;
+  const isp = ispEl.textContent.replace("📡 ", "");
+
+  ispName.textContent = isp;
+
+  if (avg >= 50) {
+    insightSubtitle.textContent = "Your connection is blazing fast!";
+    tipText.textContent =
+      `Based on your test history at VIT, Chennai, your average speed of ${avg.toFixed(
+        1
+      )} Mbps is ideal for ${isp}.`;
+    insightFooter.textContent =
+      "⚡ You're getting great speeds! No improvements needed.";
+  } else {
+    insightSubtitle.textContent = "Your connection could be improved";
+    tipText.textContent =
+      `Your average speed at VIT, Chennai is ${avg.toFixed(
+        1
+      )} Mbps. For stronger connectivity, try AB1 ground floor, Gymkhana, or areas near V-Nest during off-peak hours.`;
+    insightFooter.textContent =
+      "📍 Suggested better connectivity zones nearby.";
+  }
 }
 
-h1 span {
-  color: #2fffdc;
+/* ================= HISTORY ================= */
+function saveHistory(download, upload) {
+  const time = new Date().toLocaleTimeString();
+  const location = "VIT, Chennai";
+  const isp = ispEl.textContent.replace("📡 ", "");
+
+  const li = document.createElement("li");
+  li.className = "history-item";
+  li.dataset.download = download;
+
+  li.innerHTML = `
+    <div class="history-left">
+      <div class="history-time">${time}</div>
+      <div class="history-location">📍 ${location}</div>
+      <div class="history-isp">📡 ${isp}</div>
+    </div>
+
+    <div class="history-right">
+      <div class="speed down">⬇ ${download} <span>Mbps</span></div>
+      <div class="speed up">⬆ ${upload} <span>Mbps</span></div>
+    </div>
+  `;
+
+  historyList.prepend(li);
+  updateInsight();
 }
 
-.subtitle {
-  margin: 15px 0 40px;
-  color: #aaa;
-}
+/* ================= EVENTS ================= */
+clearBtn.addEventListener("click", () => {
+  historyList.innerHTML = "";
+  insightSubtitle.textContent = "Run tests to analyze your connection";
+  tipText.textContent =
+    "Run multiple tests to receive location-based network suggestions.";
+  insightFooter.textContent = "⚡ Waiting for test data...";
+});
 
-.gauge-container {
-  position: relative;
-  width: 300px;
-  margin: 0 auto 40px;
-}
-
-.gauge {
-  width: 300px;
-  height: 300px;
-  transform: rotate(-90deg);
-  overflow: visible;
-}
-
-.gauge-bg {
-  fill: none;
-  stroke: #1f2a30;
-  stroke-width: 16;
-}
-
-.gauge-fill {
-  fill: none;
-  stroke: #2fffdc;
-  stroke-width: 16;
-
-  stroke-linecap: round;
-  stroke-linejoin: round;
-
-  stroke-dasharray: 691;
-  stroke-dashoffset: 691;
-
-  filter: drop-shadow(0 0 14px rgba(47, 255, 220, 0.9));
-  transition: stroke-dashoffset 0.18s ease-out;
-}
-
-.gauge-value {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.gauge-value div {
-  font-size: 64px;
-  font-weight: 800;
-  letter-spacing: -1px;
-}
-
-.gauge-value span {
-  font-size: 16px;
-  letter-spacing: 1px;
-  color: #aaa;
-}
-
-button {
-  background: #2fffdc;
-  color: #000;
-  border: none;
-  padding: 12px 28px;
-  border-radius: 25px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-bottom: 30px;
-
-  box-shadow: 0 0 20px rgba(47, 255, 220, 0.6);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 35px rgba(47, 255, 220, 0.9);
-}
-
-/* ================= STATS ================= */
-.stats {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-bottom: 40px;
-}
-
-.stat {
-  background: rgba(15, 27, 32, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(47, 255, 220, 0.15);
-  box-shadow: 0 0 20px rgba(47, 255, 220, 0.05);
-
-  padding: 20px;
-  border-radius: 12px;
-  width: 160px;
-}
-
-.history {
-  width: 60%;
-  margin: 0 auto 40px;
-  text-align: left;
-
-  background: rgba(15, 27, 32, 0.6);
-  backdrop-filter: blur(8px);
-  border-radius: 12px;
-  padding: 15px;
-}
-
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.history ul {
-  list-style: none;
-}
-
-.history li {
-  padding: 10px;
-  border-bottom: 1px solid #1f2a30;
-  font-size: 14px;
-}
-.suggest-btn {
-  margin-top: 15px;
-  background: transparent;
-  color: #2fffdc;
-  border: 1px solid #2fffdc;
-  padding: 10px 20px;
-  border-radius: 20px;
-  cursor: pointer;
-}
-
-.suggestion {
-  margin-top: 12px;
-  font-size: 14px;
-  color: #aaa;
-}
-
-.history ul {
-  padding: 0;
-}
-
-.history-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 18px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.history-left {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-  color: #aaa;
-}
-
-.history-time {
-  font-weight: 600;
-  color: #fff;
-}
-
-.history-isp {
-  color: #2fffdc;
-}
-
-.history-right {
-  display: flex;
-  gap: 30px;
-  align-items: center;
-}
-
-.speed {
-  font-size: 22px;
-  font-weight: 700;
-  color: #fff;
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.speed span {
-  font-size: 13px;
-  color: #aaa;
-}
-
-.speed.down {
-  color: #2fffdc;
-}
-
-.speed.up {
-  color: #6cf3ff;
-}
-
-.insight-card {
-  width: 70%;
-  margin: 40px auto;
-  background: linear-gradient(180deg, #0f1419, #0a0f13);
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.insight-header {
-  display: flex;
-  gap: 15px;
-  padding: 22px;
-  align-items: center;
-}
-
-.insight-icon {
-  background: rgba(47, 255, 220, 0.15);
-  color: #2fffdc;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-.insight-header h3 {
-  margin: 0;
-  font-size: 20px;
-}
-
-.insight-header p {
-  margin: 4px 0 0;
-  font-size: 14px;
-  color: #2fffdc;
-}
-
-.insight-body {
-  padding: 18px 22px;
-}
-
-.insight-tip {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 14px;
-  padding: 14px 16px;
-  cursor: pointer;
-}
-
-.tip-left {
-  color: #fff;
-  font-size: 14px;
-}
-
-.tip-text {
-  margin-top: 12px;
-  font-size: 14px;
-  color: #8fa3ad;
-  line-height: 1.5;
-}
-
-.insight-footer {
-  padding: 14px 22px;
-  font-size: 14px;
-  background: rgba(47, 255, 220, 0.08);
-  color: #2fffdc;
-}
-
-.location-card {
-  width: 70%;
-  margin: 40px auto 60px;
-  background: rgba(15, 27, 32, 0.6);
-  backdrop-filter: blur(10px);
-  border-radius: 18px;
-  padding: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.location-card h3 {
-  font-size: 20px;
-  margin-bottom: 6px;
-}
-
-.location-subtitle {
-  font-size: 14px;
-  color: #8fa3ad;
-  margin-bottom: 18px;
-}
-
-.location-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.location-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 14px;
-  padding: 14px 16px;
-}
-
-.location-item strong {
-  font-size: 15px;
-}
-
-.location-item p {
-  font-size: 13px;
-  color: #aaa;
-  margin-top: 2px;
-}
-
-.location-item span {
-  font-size: 13px;
-  color: #2fffdc;
-}
-
-.location-note {
-  margin-top: 16px;
-  font-size: 13px;
-  color: #8fa3ad;
-}
+startBtn.addEventListener("click", startTest);
