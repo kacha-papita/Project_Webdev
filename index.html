@@ -4,18 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NetGauge - Speed Test</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
+  <link rel="stylesheet" href="style.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+    rel="stylesheet"
+  />
 </head>
 <body>
 
   <!-- Header -->
   <header class="top-bar">
-    <div class="logo"> NetGauge</div>
+    <div class="logo">⚡ NetGauge</div>
     <div class="info">
-      <span id="location">Detecting location</span>
-      <span id="isp">Detecting ISP</span>
+      <span id="location">📍 Detecting location…</span>
+      <span id="isp">📡 Detecting ISP…</span>
     </div>
   </header>
 
@@ -30,27 +33,16 @@
 
     <!-- Gauge -->
     <div class="gauge-container">
-  <svg class="gauge" viewBox="0 0 260 260">
-    <circle
-      cx="130"
-      cy="130"
-      r="110"
-      class="gauge-bg"
-    />
-    <circle
-      cx="130"
-      cy="130"
-      r="110"
-      class="gauge-fill"
-    />
-  </svg>
+      <svg class="gauge" viewBox="0 0 260 260">
+        <circle cx="130" cy="130" r="110" class="gauge-bg" />
+        <circle cx="130" cy="130" r="110" class="gauge-fill" />
+      </svg>
 
-  <div class="gauge-value">
-    <div id="speed">0</div>
-    <span>Mbps</span>
-  </div>
-</div>
-
+      <div class="gauge-value">
+        <div id="speed">0</div>
+        <span>Mbps</span>
+      </div>
+    </div>
 
     <!-- Button -->
     <button id="startBtn">Start Test</button>
@@ -67,20 +59,86 @@
       </div>
     </div>
 
-    <!-- History -->
+    <!-- Test History -->
     <section class="history">
       <div class="history-header">
         <h3>Test History</h3>
         <button id="clearHistory">Clear all</button>
       </div>
       <ul id="historyList"></ul>
-      <button id="suggestBtn" class="suggest-btn">
-   Need extra speed?
-</button>
-
-<p id="suggestionText" class="suggestion"></p>
     </section>
+
+    
+
+    <!-- Insight / Recommendation Card -->
+    <section class="insight-card">
+      <div class="insight-header">
+        <div class="insight-icon">💡</div>
+        <div>
+          <h3>Need More Speed?</h3>
+          <p id="insightSubtitle">Run tests to analyze your connection</p>
+        </div>
+      </div>
+
+      <div class="insight-body" id="insightBody">
+        <div class="insight-tip">
+          <div class="tip-left">
+            📍 <strong id="ispName">Your ISP</strong> network tips
+          </div>
+          <div class="tip-right">›</div>
+        </div>
+
+        <p class="tip-text" id="tipText">
+          Run multiple tests to receive location-based network suggestions.
+        </p>
+      </div>
+
+      <div class="insight-footer" id="insightFooter">
+        ⚡ Waiting for test data...
+      </div>
+    </section>
+
+    <!-- Better Network Locations -->
+<section class="location-card">
+  <h3>📍 Better Connectivity Nearby</h3>
+  <p class="location-subtitle">
+    Based on user test patterns in this area
+  </p>
+
+  <div class="location-list">
+    <div class="location-item">
+      <div>
+        <strong>V-Nest Building</strong>
+        <p>High signal strength · Low congestion</p>
+      </div>
+      <span>~300 m</span>
+    </div>
+
+    <div class="location-item">
+      <div>
+        <strong>AB1 Ground Floor</strong>
+        <p>Stable Wi-Fi coverage · Open area</p>
+      </div>
+      <span>~450 m</span>
+    </div>
+
+    <div class="location-item">
+      <div>
+        <strong>Gymkhana Indoor Area</strong>
+        <p>Consistent network during peak hours</p>
+      </div>
+      <span>~650 m</span>
+    </div>
+  </div>
+
+  <p class="location-note">
+    🗺️ This section can be enhanced using Maps API for real-time recommendations.
+  </p>
+</section>
+
+
   </main>
+
   <script src="script.js"></script>
 </body>
 </html>
