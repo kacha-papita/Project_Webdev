@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NetGauge - Speed Test</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="top-bar">
+    <div class="logo"> NetGauge</div>
+    <div class="info">
+      <span id="location">Detecting location</span>
+      <span id="isp">Detecting ISP</span>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="container">
+
+    <h1>Let's check your <span>speed</span></h1>
+    <p class="subtitle">
+      Hit the button below and we'll measure your connection.
+      Takes about 10 seconds.
+    </p>
+
+    <!-- Gauge -->
+    <div class="gauge-container">
+  <svg class="gauge" viewBox="0 0 260 260">
+    <circle
+      cx="130"
+      cy="130"
+      r="110"
+      class="gauge-bg"
+    />
+    <circle
+      cx="130"
+      cy="130"
+      r="110"
+      class="gauge-fill"
+    />
+  </svg>
+
+  <div class="gauge-value">
+    <div id="speed">0</div>
+    <span>Mbps</span>
+  </div>
+</div>
+
+
+    <!-- Button -->
+    <button id="startBtn">Start Test</button>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        ⬇ Download
+        <strong id="download">0 Mbps</strong>
+      </div>
+      <div class="stat">
+        ⬆ Upload
+        <strong id="upload">0 Mbps</strong>
+      </div>
+    </div>
+
+    <!-- History -->
+    <section class="history">
+      <div class="history-header">
+        <h3>Test History</h3>
+        <button id="clearHistory">Clear all</button>
+      </div>
+      <ul id="historyList"></ul>
+      <button id="suggestBtn" class="suggest-btn">
+   Need extra speed?
+</button>
+
+<p id="suggestionText" class="suggestion"></p>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
